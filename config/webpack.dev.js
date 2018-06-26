@@ -42,6 +42,37 @@ module.exports = {
         ]
       },
       {
+        test: /\.sass$/,
+          use: [
+          {
+            loader: "style-loader"
+          },
+          { loader: "css-loader" },
+          { loader: "sass-loader" }
+        ]
+      },
+      {
+        test: /\.styl$/,
+          use: [
+          {
+            loader: "style-loader"
+          },
+          { loader: "css-loader" },
+          { loader: "stylus-loader" }
+        ]
+      },
+      {
+        test: /\.less$/,
+          use: [
+          {
+            loader: "style-loader"
+          },
+          { loader: "css-loader" },
+          { loader: "postcss-loader" },
+          { loader: "less-loader" }
+        ]
+      },
+      {
         test: /\.jpg$/,
         use: [
           {
