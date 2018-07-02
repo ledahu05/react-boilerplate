@@ -1,8 +1,5 @@
-require("babel-runtime/regenerator")
-require("react-hot-loader/patch")
-require("babel-register")
-require("webpack-hot-middleware/client?reload=true")
-require("./main.less")
-require("./index.html")
+require("./main.css")
+require("./content.css")
+require("./images/link.jpg")
 require("./app")
-
+console.log(`Environment is ${process.env.NODE_ENV}`)

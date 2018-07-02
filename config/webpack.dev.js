@@ -1,12 +1,19 @@
 const path = require("path")
 const webpack = require("webpack")
 const HTMLWebpackPlugin = require("html-webpack-plugin")
-
+// const BundleAnalyserPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin
 module.exports = {
   entry: {
-    main: ["./src/main.js"]
+    vendor: ["react", "lodash", "react-dom"],
+    main: [
+      "react-hot-loader/patch",
+      "babel-runtime/regenerator",
+      "babel-register",
+      "webpack-hot-middleware/client?reload=true",
+      "./src/main.js"
+    ]
   },
-  mode: "development",
+  mode: "production",
   output: {
     filename: "[name]-bundle.js",
     path: path.resolve(__dirname, "../dist"),
@@ -15,7 +22,6 @@ module.exports = {
   devServer: {
     contentBase: "dist",
     overlay: true,
-    hot: true,
     stats: {
       colors: true
     }
@@ -34,42 +40,11 @@ module.exports = {
       },
       {
         test: /\.css$/,
-          use: [
+        use: [
           {
             loader: "style-loader"
           },
           { loader: "css-loader" }
-        ]
-      },
-      {
-        test: /\.sass$/,
-          use: [
-          {
-            loader: "style-loader"
-          },
-          { loader: "css-loader" },
-          { loader: "sass-loader" }
-        ]
-      },
-      {
-        test: /\.styl$/,
-          use: [
-          {
-            loader: "style-loader"
-          },
-          { loader: "css-loader" },
-          { loader: "stylus-loader" }
-        ]
-      },
-      {
-        test: /\.less$/,
-          use: [
-          {
-            loader: "style-loader"
-          },
-          { loader: "css-loader" },
-          { loader: "postcss-loader" },
-          { loader: "less-loader" }
         ]
       },
       {
@@ -82,21 +57,23 @@ module.exports = {
             }
           }
         ]
-      },
-      {
-        test: /\.html$/,
-        use: [
-          {
-            loader: "html-loader"
-          }
-        ]
       }
     ]
   },
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
+    new webpack.DefinePlugin({
+      "process.env": {
+        NODE_ENV: JSON.stringify("development")
+      }
+    }),
     new HTMLWebpackPlugin({
-      template: "./src/index.html"
-    })
+      template: "./src/index.ejs",
+      inject: true,
+      title: "Link's Journal"
+    })//,
+    // new BundleAnalyserPlugin({
+    //   generateStatsFile: true
+    // })
   ]
 }

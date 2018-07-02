@@ -1,98 +1,91 @@
 const path = require("path")
 const webpack = require("webpack")
+const ExtractTextPlugin = require("extract-text-webpack-plugin")
 const HTMLWebpackPlugin = require("html-webpack-plugin")
-const MiniCSSExtractPlugin = require("mini-css-extract-plugin")
-const OptimizedCssAssetsPlugin = require("optimize-css-assets-webpack-plugin");
-module.exports = {
-  entry: {
-    main: ["./src/main.js"]
-  },
-  mode: "production",
-  output: {
-    filename: "[name]-bundle.js",
-    path: path.resolve(__dirname, "../dist"),
-    publicPath: "/"
-  },
-  devtool: "source-map",
-  module: {
-    rules: [
-      {
-        test: /\.js$/,
-        exclude: /node_modules/,
-        use: [
-          {
-            loader: "babel-loader"
-          }
-        ]
-      },
-      {
-        test: /\.css$/,
-          use: [
-          {
-            loader: "MiniCSSExtractPlugin.loader"
-          },
-          { loader: "css-loader" }
-        ]
-      },
-      {
-        test: /\.sass$/,
-          use: [
-          {
-            loader: "style-loader"
-          },
-          { loader: "css-loader" },
-          { loader: "sass-loader" }
-        ]
-      },
-      {
-        test: /\.styl$/,
-          use: [
-          {
-            loader: "style-loader"
-          },
-          { loader: "css-loader" },
-          { loader: "stylus-loader" }
-        ]
-      },
-      {
-        test: /\.less$/,
-          use: [
-          {
-            loader: MiniCSSExtractPlugin.loader
-          },
-          { loader: "css-loader" },
-          { loader: "postcss-loader" },
-          { loader: "less-loader" }
-        ]
-      },
-      {
-        test: /\.jpg$/,
-        use: [
-          {
-            loader: "file-loader",
-            options: {
-              name: "images/[name].[ext]"
-            }
-          }
-        ]
-      },
-      {
-        test: /\.html$/,
-        use: [
-          {
-            loader: "html-loader"
-          }
-        ]
+const OptimizeCssAssetsPlugin = require("optimize-css-assets-webpack-plugin")
+const UglifyJSPlugin = require("uglifyjs-webpack-plugin")
+const CompressionPlugin = require("compression-webpack-plugin")
+const BrotliPlugin = require("brotli-webpack-plugin")
+
+
+module.exports = env => {
+  return {
+    entry: {
+      vendor: ["react", "lodash", "react-dom"],
+      main: ["./src/main.js"]
+    },
+    mode: "production",
+    output: {
+      filename: "[name]-bundle.js",
+      path: path.resolve(__dirname, "../dist"),
+      publicPath: "/"
+    },
+    devServer: {
+      contentBase: "dist",
+      overlay: true,
+      stats: {
+        colors: true
       }
+    },
+    module: {
+      rules: [
+        {
+          test: /\.js$/,
+          exclude: /node_modules/,
+          use: [
+            {
+              loader: "babel-loader"
+            }
+          ]
+        },
+        {
+          test: /\.css$/,
+          use: ExtractTextPlugin.extract({
+            fallback: "style-loader",
+            use: {
+              loader: "css-loader",
+              options: {
+                minimize: true
+              }
+            }
+          })
+        },
+        {
+          test: /\.jpg$/,
+          use: [
+            {
+              loader: "file-loader",
+              options: {
+                name: "images/[name].[ext]"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    plugins: [
+      new ExtractTextPlugin("[name].css"),
+      new OptimizeCssAssetsPlugin({
+        assetNameRegExp: /\.css$/g,
+        cssProcessor: require("cssnano"),
+        cssProcessorOptions: { discardComments: { removeAll: true } },
+        canPrint: true
+      }),
+      new webpack.DefinePlugin({
+        "process.env": {
+          NODE_ENV: JSON.stringify(env.NODE_ENV)
+        }
+      }),
+      new HTMLWebpackPlugin({
+        template: "./src/index.ejs",
+        inject: true,
+        title: "Link's Journal"
+      }),
+      new UglifyJSPlugin(),
+      new CompressionPlugin({
+        algorithm: "gzip"
+      }),
+      new BrotliPlugin()
     ]
-  },
-  plugins: [
-    new OptimizedCssAssetsPlugin(),
-    new MiniCSSExtractPlugin({
-      filename: "[name]-[contenthash].css"
-    }),
-    new HTMLWebpackPlugin({
-      template: "./src/index.html"
-    })
-  ]
+  }
 }
